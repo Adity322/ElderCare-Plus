@@ -18,7 +18,7 @@ const router = express.Router();
 // Public
 router.get("/", getCaregivers);
 
-// ✅ ALL named routes ABOVE /:id
+// ✅ ALL named GET routes ABOVE /:id
 router.get(
   "/me",
   protect,
@@ -49,7 +49,25 @@ router.get(
   }
 )
 
-// /:id must be BELOW all named routes
+router.get(
+  "/my-reviews",
+  protect,
+  authorizeRoles("caregiver"),
+  async (req, res) => {
+    try {
+      const caregiver = await Caregiver.findOne({ userId: req.user._id })
+      if (!caregiver) return res.json([])
+      const reviews = await Review.find({ caregiverId: caregiver._id })
+        .populate("userId", "name")
+        .sort({ createdAt: -1 })
+      res.json(reviews)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  }
+)
+
+// /:id must be BELOW all named GET routes
 router.get("/:id", protect, getSingleCaregiver);
 
 // Caregiver only
@@ -84,23 +102,6 @@ router.put(
         { new: true }
       )
       res.json({ profilePhoto: caregiver.profilePhoto })
-    } catch (error) {
-      res.status(500).json({ error: error.message })
-    }
-  }
-)
-router.get(
-  "/my-reviews",
-  protect,
-  authorizeRoles("caregiver"),
-  async (req, res) => {
-    try {
-      const caregiver = await Caregiver.findOne({ userId: req.user._id })
-      if (!caregiver) return res.json([])
-      const reviews = await Review.find({ caregiverId: caregiver._id })
-        .populate("userId", "name")
-        .sort({ createdAt: -1 })
-      res.json(reviews)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
