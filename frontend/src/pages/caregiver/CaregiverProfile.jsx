@@ -26,51 +26,50 @@ export default function CaregiverProfile() {
 
   const [photoUrl, setPhotoUrl] = useState("")
   const [documents, setDocuments] = useState([])
+  const [reviews, setReviews] = useState([])
+
 
   const headers = {
     Authorization: `Bearer ${token}`,
   }
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get(
+  const fetchProfile = async () => {
+    try {
+      const [profileRes, reviewsRes] = await Promise.all([
+        axios.get(
           `${import.meta.env.VITE_API_URL}/caregivers/me`,
           { headers }
-        )
+        ),
+        axios.get(
+          `${import.meta.env.VITE_API_URL}/caregivers/my-reviews`,
+          { headers }
+        ),
+      ])
 
-        if (res.data) {
-          setProfile(res.data)
-
-          setPhotoUrl(res.data.profilePhoto || "")
-          setDocuments(res.data.documents || [])
-
-          setForm({
-            qualifications: res.data.qualifications || "",
-            experienceYears: res.data.experienceYears || "",
-            certifications:
-              res.data.certifications?.join(", ") || "",
-            serviceAreas:
-              res.data.serviceAreas?.join(", ") || "",
-          })
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
+      if (profileRes.data) {
+        setProfile(profileRes.data)
+        setPhotoUrl(profileRes.data.profilePhoto || "")
+        setDocuments(profileRes.data.documents || [])
+        setForm({
+          qualifications: profileRes.data.qualifications || "",
+          experienceYears: profileRes.data.experienceYears || "",
+          certifications: profileRes.data.certifications?.join(", ") || "",
+          serviceAreas: profileRes.data.serviceAreas?.join(", ") || "",
+        })
       }
+
+      setReviews(reviewsRes.data || [])
+
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-
-    fetchProfile()
-  }, [])
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    })
   }
 
+  fetchProfile()
+}, [])
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0]
 
@@ -455,6 +454,39 @@ export default function CaregiverProfile() {
           </button>
         </form>
       </div>
+      {/* Reviews */}
+{reviews.length > 0 && (
+  <div className="bg-white rounded-xl border border-gray-100 p-5">
+    <h2 className="text-sm font-medium text-gray-800 mb-4">
+      My Reviews
+      <span className="ml-2 bg-amber-50 text-amber-700 text-xs px-2 py-0.5 rounded-full">
+        ⭐ {Number(profile?.rating || 0).toFixed(1)} avg
+      </span>
+    </h2>
+    <div className="space-y-3">
+      {reviews.map((review) => (
+        <div key={review._id} className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex text-amber-400 text-sm">
+              {Array.from({ length: 5 }, (_, i) => (
+                <span key={i}>{i < review.rating ? "★" : "☆"}</span>
+              ))}
+            </div>
+            <span className="text-xs text-gray-400">
+              {new Date(review.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+          {review.comment && (
+            <p className="text-sm text-gray-600">{review.comment}</p>
+          )}
+          <p className="text-xs text-gray-400 mt-1">
+            — {review.userId?.name || "Family User"}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
     </div>
   )
 }
