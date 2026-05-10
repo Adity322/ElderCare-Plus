@@ -1,6 +1,7 @@
 import express from "express";
 import Caregiver from "../models/Caregiver.js"
 import upload from "../middleware/uploadMiddleware.js"
+import Review from "../models/Review.js"
 import {
   createCaregiverProfile,
   getCaregivers,
@@ -83,6 +84,23 @@ router.put(
         { new: true }
       )
       res.json({ profilePhoto: caregiver.profilePhoto })
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  }
+)
+router.get(
+  "/my-reviews",
+  protect,
+  authorizeRoles("caregiver"),
+  async (req, res) => {
+    try {
+      const caregiver = await Caregiver.findOne({ userId: req.user._id })
+      if (!caregiver) return res.json([])
+      const reviews = await Review.find({ caregiverId: caregiver._id })
+        .populate("userId", "name")
+        .sort({ createdAt: -1 })
+      res.json(reviews)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
