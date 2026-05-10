@@ -143,54 +143,43 @@ export default function CaregiverProfile() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+  e.preventDefault()
+  setSubmitting(true)
+  setError("")
+  setSuccess("")
 
-    setSubmitting(true)
-    setError("")
-    setSuccess("")
-
-    try {
-      const payload = {
-        qualifications: form.qualifications,
-        experienceYears: Number(form.experienceYears),
-        certifications: form.certifications
-          .split(",")
-          .map((c) => c.trim())
-          .filter(Boolean),
-
-        serviceAreas: form.serviceAreas
-          .split(",")
-          .map((a) => a.trim())
-          .filter(Boolean),
-
-        profilePhoto: photoUrl,
-      }
-
-      if (profile) {
-        await axios.put(
-          `${import.meta.env.VITE_API_URL}/caregivers/profile`,
-          payload,
-          { headers }
-        )
-
-        setSuccess("Profile updated successfully")
-      } else {
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/caregivers/profile`,
-          payload,
-          { headers }
-        )
-
-        setSuccess("Profile created successfully")
-      }
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Something went wrong"
-      )
-    } finally {
-      setSubmitting(false)
+  try {
+    const payload = {
+      qualifications: form.qualifications,
+      experienceYears: Number(form.experienceYears),
+      certifications: form.certifications.split(",").map((c) => c.trim()).filter(Boolean),
+      serviceAreas: form.serviceAreas.split(",").map((a) => a.trim()).filter(Boolean),
+      profilePhoto: photoUrl,
     }
+
+    if (profile) {
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/caregivers/profile`,
+        payload,
+        { headers }
+      )
+      setProfile(res.data)        // ✅ keep profile state fresh
+      setSuccess("Profile updated successfully")
+    } else {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/caregivers/profile`,
+        payload,
+        { headers }
+      )
+      setProfile(res.data)        // ✅ this is the critical missing line
+      setSuccess("Profile created successfully")
+    }
+  } catch (err) {
+    setError(err.response?.data?.message || "Something went wrong")
+  } finally {
+    setSubmitting(false)
   }
+}
 
   if (loading) {
     return (
