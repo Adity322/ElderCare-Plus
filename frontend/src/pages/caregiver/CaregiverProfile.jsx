@@ -24,7 +24,9 @@ export default function CaregiverProfile() {
   const [documents, setDocuments] = useState([])
   const [reviews, setReviews] = useState([])
 
-  const headers = { Authorization: `Bearer ${token}` }
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  }
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,17 +41,22 @@ export default function CaregiverProfile() {
             { headers }
           ),
         ])
+
         if (profileRes.data) {
           setProfile(profileRes.data)
           setPhotoUrl(profileRes.data.profilePhoto || "")
           setDocuments(profileRes.data.documents || [])
+
           setForm({
             qualifications: profileRes.data.qualifications || "",
             experienceYears: profileRes.data.experienceYears || "",
-            certifications: profileRes.data.certifications?.join(", ") || "",
-            serviceAreas: profileRes.data.serviceAreas?.join(", ") || "",
+            certifications:
+              profileRes.data.certifications?.join(", ") || "",
+            serviceAreas:
+              profileRes.data.serviceAreas?.join(", ") || "",
           })
         }
+
         setReviews(reviewsRes.data || [])
       } catch (err) {
         console.error(err)
@@ -57,21 +64,29 @@ export default function CaregiverProfile() {
         setLoading(false)
       }
     }
+
     fetchProfile()
   }, [])
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    })
   }
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0]
+
     if (!file) return
+
     setUploading(true)
     setError("")
+
     try {
       const formData = new FormData()
       formData.append("photo", file)
+
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/caregivers/profile/photo`,
         formData,
@@ -82,6 +97,7 @@ export default function CaregiverProfile() {
           },
         }
       )
+
       setPhotoUrl(res.data.profilePhoto)
       setSuccess("Photo uploaded successfully")
     } catch (err) {
@@ -93,12 +109,19 @@ export default function CaregiverProfile() {
 
   const handleDocumentUpload = async (e) => {
     const files = Array.from(e.target.files)
+
     if (!files.length) return
+
     setUploadingDocs(true)
     setError("")
+
     try {
       const formData = new FormData()
-      files.forEach((file) => formData.append("documents", file))
+
+      files.forEach((file) => {
+        formData.append("documents", file)
+      })
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/upload/documents`,
         formData,
@@ -109,6 +132,7 @@ export default function CaregiverProfile() {
           },
         }
       )
+
       setDocuments(res.data.documents || [])
       setSuccess("Documents uploaded successfully")
     } catch (err) {
@@ -120,9 +144,11 @@ export default function CaregiverProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
     setSubmitting(true)
     setError("")
     setSuccess("")
+
     try {
       const payload = {
         qualifications: form.qualifications,
@@ -131,18 +157,22 @@ export default function CaregiverProfile() {
           .split(",")
           .map((c) => c.trim())
           .filter(Boolean),
+
         serviceAreas: form.serviceAreas
           .split(",")
           .map((a) => a.trim())
           .filter(Boolean),
+
         profilePhoto: photoUrl,
       }
+
       if (profile) {
         await axios.put(
           `${import.meta.env.VITE_API_URL}/caregivers/profile`,
           payload,
           { headers }
         )
+
         setSuccess("Profile updated successfully")
       } else {
         await axios.post(
@@ -150,10 +180,13 @@ export default function CaregiverProfile() {
           payload,
           { headers }
         )
+
         setSuccess("Profile created successfully")
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong")
+      setError(
+        err.response?.data?.message || "Something went wrong"
+      )
     } finally {
       setSubmitting(false)
     }
@@ -162,7 +195,9 @@ export default function CaregiverProfile() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400 text-sm">Loading profile...</div>
+        <div className="text-gray-400 text-sm">
+          Loading profile...
+        </div>
       </div>
     )
   }
@@ -172,7 +207,10 @@ export default function CaregiverProfile() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-medium text-gray-900">My Profile</h1>
+        <h1 className="text-xl font-medium text-gray-900">
+          My Profile
+        </h1>
+
         <p className="text-sm text-gray-500 mt-1">
           Set up your profile to start receiving bookings
         </p>
@@ -180,21 +218,29 @@ export default function CaregiverProfile() {
 
       {/* Verification Status */}
       {profile && (
-        <div className={`rounded-xl p-4 ${
-          profile.isVerified
-            ? "bg-teal-50 border border-teal-100"
-            : "bg-amber-50 border border-amber-100"
-        }`}>
-          <div className={`text-sm font-medium ${
-            profile.isVerified ? "text-teal-800" : "text-amber-800"
-          }`}>
+        <div
+          className={`rounded-xl p-4 ${
+            profile.isVerified
+              ? "bg-teal-50 border border-teal-100"
+              : "bg-amber-50 border border-amber-100"
+          }`}
+        >
+          <div
+            className={`text-sm font-medium ${
+              profile.isVerified
+                ? "text-teal-800"
+                : "text-amber-800"
+            }`}
+          >
             {profile.isVerified
               ? "✅ Profile Verified — you are visible to families"
               : "⏳ Pending Verification — admin review in progress"}
           </div>
+
           {!profile.isVerified && (
             <div className="text-xs text-amber-600 mt-0.5">
-              Your profile will go live once admin approves your documents
+              Your profile will go live once admin approves your
+              documents
             </div>
           )}
         </div>
@@ -202,7 +248,10 @@ export default function CaregiverProfile() {
 
       {/* Profile Photo */}
       <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h2 className="text-sm font-medium text-gray-800 mb-4">Profile Photo</h2>
+        <h2 className="text-sm font-medium text-gray-800 mb-4">
+          Profile Photo
+        </h2>
+
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center overflow-hidden shrink-0">
             {photoUrl ? (
@@ -215,9 +264,11 @@ export default function CaregiverProfile() {
               <span className="text-3xl">🧑‍⚕️</span>
             )}
           </div>
+
           <div>
             <label className="cursor-pointer bg-white border border-gray-200 hover:border-blue-300 text-gray-600 text-sm px-4 py-2 rounded-lg transition inline-block">
               {uploading ? "Uploading..." : "Upload Photo"}
+
               <input
                 type="file"
                 accept="image/*"
@@ -226,7 +277,10 @@ export default function CaregiverProfile() {
                 disabled={uploading}
               />
             </label>
-            <p className="text-xs text-gray-400 mt-1">JPG or PNG, max 2MB</p>
+
+            <p className="text-xs text-gray-400 mt-1">
+              JPG or PNG, max 2MB
+            </p>
           </div>
         </div>
       </div>
@@ -236,11 +290,17 @@ export default function CaregiverProfile() {
         <h2 className="text-sm font-medium text-gray-800 mb-1">
           Verification Documents
         </h2>
+
         <p className="text-xs text-gray-400 mb-4">
-          Upload your certificates, ID, and qualification documents for admin verification
+          Upload your certificates, ID, and qualification
+          documents for admin verification
         </p>
+
         <label className="cursor-pointer inline-flex items-center gap-2 bg-white border border-gray-200 hover:border-blue-300 text-gray-600 text-sm px-4 py-2 rounded-lg transition">
-          {uploadingDocs ? "Uploading..." : "📎 Upload Documents"}
+          {uploadingDocs
+            ? "Uploading..."
+            : "📎 Upload Documents"}
+
           <input
             type="file"
             accept=".jpg,.jpeg,.png,.pdf"
@@ -250,14 +310,17 @@ export default function CaregiverProfile() {
             disabled={uploadingDocs}
           />
         </label>
+
         <p className="text-xs text-gray-400 mt-2">
           JPG, PNG or PDF · Max 5 files at once
         </p>
+
         {documents.length > 0 && (
           <div className="mt-4 space-y-2">
             <div className="text-xs text-gray-500 font-medium mb-2">
               Uploaded Documents ({documents.length})
             </div>
+
             {documents.map((doc, i) => (
               <div
                 key={i}
@@ -267,11 +330,13 @@ export default function CaregiverProfile() {
                   <span className="text-sm">
                     {doc.endsWith(".pdf") ? "📄" : "🖼️"}
                   </span>
+
                   <span className="text-xs text-gray-600 truncate max-w-xs">
                     Document {i + 1}
                   </span>
                 </div>
-                
+
+                <a
                   href={doc}
                   target="_blank"
                   rel="noreferrer"
@@ -290,21 +355,28 @@ export default function CaregiverProfile() {
         <h2 className="text-sm font-medium text-gray-800 mb-4">
           Professional Details
         </h2>
+
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
+
         {success && (
           <div className="bg-teal-50 text-teal-700 text-sm px-4 py-3 rounded-lg mb-4">
             ✅ {success}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           <div>
             <label className="text-xs text-gray-500 mb-1 block">
               Qualifications
             </label>
+
             <input
               type="text"
               name="qualifications"
@@ -315,10 +387,12 @@ export default function CaregiverProfile() {
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           <div>
             <label className="text-xs text-gray-500 mb-1 block">
               Years of Experience
             </label>
+
             <input
               type="number"
               name="experienceYears"
@@ -330,11 +404,15 @@ export default function CaregiverProfile() {
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           <div>
             <label className="text-xs text-gray-500 mb-1 block">
               Certifications
-              <span className="text-gray-400 ml-1">(comma separated)</span>
+              <span className="text-gray-400 ml-1">
+                (comma separated)
+              </span>
             </label>
+
             <input
               type="text"
               name="certifications"
@@ -344,11 +422,15 @@ export default function CaregiverProfile() {
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           <div>
             <label className="text-xs text-gray-500 mb-1 block">
               Service Areas
-              <span className="text-gray-400 ml-1">(comma separated)</span>
+              <span className="text-gray-400 ml-1">
+                (comma separated)
+              </span>
             </label>
+
             <input
               type="text"
               name="serviceAreas"
@@ -358,12 +440,17 @@ export default function CaregiverProfile() {
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           <button
             type="submit"
             disabled={submitting}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-lg transition disabled:opacity-60"
           >
-            {submitting ? "Saving..." : profile ? "Update Profile" : "Create Profile"}
+            {submitting
+              ? "Saving..."
+              : profile
+              ? "Update Profile"
+              : "Create Profile"}
           </button>
         </form>
       </div>
@@ -373,26 +460,40 @@ export default function CaregiverProfile() {
         <div className="bg-white rounded-xl border border-gray-100 p-5">
           <h2 className="text-sm font-medium text-gray-800 mb-4">
             My Reviews
+
             <span className="ml-2 bg-amber-50 text-amber-700 text-xs px-2 py-0.5 rounded-full">
               ⭐ {Number(profile?.rating || 0).toFixed(1)} avg
             </span>
           </h2>
+
           <div className="space-y-3">
             {reviews.map((review) => (
-              <div key={review._id} className="bg-gray-50 rounded-lg p-4">
+              <div
+                key={review._id}
+                className="bg-gray-50 rounded-lg p-4"
+              >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex text-amber-400 text-sm">
                     {Array.from({ length: 5 }, (_, i) => (
-                      <span key={i}>{i < review.rating ? "★" : "☆"}</span>
+                      <span key={i}>
+                        {i < review.rating ? "★" : "☆"}
+                      </span>
                     ))}
                   </div>
+
                   <span className="text-xs text-gray-400">
-                    {new Date(review.createdAt).toLocaleDateString()}
+                    {new Date(
+                      review.createdAt
+                    ).toLocaleDateString()}
                   </span>
                 </div>
+
                 {review.comment && (
-                  <p className="text-sm text-gray-600">{review.comment}</p>
+                  <p className="text-sm text-gray-600">
+                    {review.comment}
+                  </p>
                 )}
+
                 <p className="text-xs text-gray-400 mt-1">
                   — {review.userId?.name || "Family User"}
                 </p>
@@ -401,7 +502,6 @@ export default function CaregiverProfile() {
           </div>
         </div>
       )}
-
     </div>
   )
 }
