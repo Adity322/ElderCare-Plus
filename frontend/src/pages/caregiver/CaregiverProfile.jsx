@@ -70,6 +70,14 @@ export default function CaregiverProfile() {
 
   fetchProfile()
 }, [])
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handlePhotoUpload = async (e) => {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0]
 
