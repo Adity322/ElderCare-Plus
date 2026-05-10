@@ -1,6 +1,7 @@
 import Booking from "../models/Booking.js";
 import { io } from "../../server.js"
 import Caregiver from "../models/Caregiver.js"
+import Review from "../models/Review.js"
 // ➕ Create Booking
 export const createBooking = async (req, res) => {
   try {
@@ -141,6 +142,47 @@ export const updateBookingStatus = async (req, res) => {
   }
 };
 
+// ⭐ Submit Review
+export const submitReview = async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    })
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" })
+    }
+
+    if (booking.status !== "completed") {
+      return res.status(400).json({ message: "Can only review completed bookings" })
+    }
+
+    const existingReview = await Review.findOne({ bookingId: req.params.id })
+    if (existingReview) {
+      return res.status(400).json({ message: "Review already submitted" })
+    }
+
+    const review = await Review.create({
+      bookingId: booking._id,
+      userId: req.user._id,
+      caregiverId: booking.caregiverId,  // ← from booking, not user input
+      rating: req.body.rating,
+      comment: req.body.comment,
+    })
+
+    // Recalculate caregiver average rating
+    const allReviews = await Review.find({ caregiverId: booking.caregiverId })
+    const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+    await Caregiver.findByIdAndUpdate(booking.caregiverId, {
+      rating: Math.round(avg * 10) / 10,
+    })
+
+    res.status(201).json(review)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
 
 
 
