@@ -64,22 +64,22 @@ export const getSingleCaregiver = async (req, res) => {
 
 
 // ✏️ Update Caregiver Profile
+// caregiverController.js
 export const updateCaregiver = async (req, res) => {
   try {
     const caregiver = await Caregiver.findOneAndUpdate(
       { userId: req.user._id },
-      req.body,
-      { new: true }
-    );
-
-    res.json(caregiver);
+      { $set: req.body },              // ← was missing $set
+      { new: true, runValidators: true }
+    )
+    if (!caregiver) {
+      return res.status(404).json({ message: "Profile not found" })
+    }
+    res.json(caregiver)
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message })
   }
-};
-
-
-
+}
 // ✅ Admin Verify Caregiver
 export const verifyCaregiver = async (req, res) => {
   try {
