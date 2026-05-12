@@ -28,46 +28,42 @@ export default function CaregiverProfile() {
     Authorization: `Bearer ${token}`,
   }
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const [profileRes, reviewsRes] = await Promise.all([
-          axios.get(
-            `${import.meta.env.VITE_API_URL}/caregivers/me`,
-            { headers }
-          ),
-          axios.get(
-            `${import.meta.env.VITE_API_URL}/caregivers/my-reviews`,
-            { headers }
-          ),
-        ])
-
-        if (profileRes.data) {
-          setProfile(profileRes.data)
-          setPhotoUrl(profileRes.data.profilePhoto || "")
-          setDocuments(profileRes.data.documents || [])
-
-          setForm({
-            qualifications: profileRes.data.qualifications || "",
-            experienceYears: profileRes.data.experienceYears || "",
-            certifications:
-              profileRes.data.certifications?.join(", ") || "",
-            serviceAreas:
-              profileRes.data.serviceAreas?.join(", ") || "",
-          })
-        }
-
-        setReviews(reviewsRes.data || [])
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
+ useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      const profileRes = await axios.get(
+        `${import.meta.env.VITE_API_URL}/caregivers/me`,
+        { headers }
+      )
+      if (profileRes.data) {
+        setProfile(profileRes.data)
+        setPhotoUrl(profileRes.data.profilePhoto || "")
+        setDocuments(profileRes.data.documents || [])
+        setForm({
+          qualifications: profileRes.data.qualifications || "",
+          experienceYears: profileRes.data.experienceYears || "",
+          certifications: profileRes.data.certifications?.join(", ") || "",
+          serviceAreas: profileRes.data.serviceAreas?.join(", ") || "",
+        })
       }
+    } catch (err) {
+      console.error("Profile fetch error:", err)
     }
 
-    fetchProfile()
-  }, [])
+    try {
+      const reviewsRes = await axios.get(
+        `${import.meta.env.VITE_API_URL}/caregivers/my-reviews`,
+        { headers }
+      )
+      setReviews(reviewsRes.data || [])
+    } catch (err) {
+      console.error("Reviews fetch error:", err)
+    }
 
+    setLoading(false)
+  }
+  fetchProfile()
+}, [])
   const handleChange = (e) => {
     setForm({
       ...form,
