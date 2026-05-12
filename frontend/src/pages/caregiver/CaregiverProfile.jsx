@@ -28,42 +28,49 @@ export default function CaregiverProfile() {
     Authorization: `Bearer ${token}`,
   }
 
- useEffect(() => {
-  const fetchProfile = async () => {
-    try {
-      const profileRes = await axios.get(
-        `${import.meta.env.VITE_API_URL}/caregivers/me`,
-        { headers }
-      )
-      if (profileRes.data) {
-        setProfile(profileRes.data)
-        setPhotoUrl(profileRes.data.profilePhoto || "")
-        setDocuments(profileRes.data.documents || [])
-        setForm({
-          qualifications: profileRes.data.qualifications || "",
-          experienceYears: profileRes.data.experienceYears || "",
-          certifications: profileRes.data.certifications?.join(", ") || "",
-          serviceAreas: profileRes.data.serviceAreas?.join(", ") || "",
-        })
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profileRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/caregivers/me`,
+          { headers }
+        )
+
+        if (profileRes.data) {
+          setProfile(profileRes.data)
+          setPhotoUrl(profileRes.data.profilePhoto || "")
+          setDocuments(profileRes.data.documents || [])
+
+          setForm({
+            qualifications: profileRes.data.qualifications || "",
+            experienceYears: profileRes.data.experienceYears || "",
+            certifications:
+              profileRes.data.certifications?.join(", ") || "",
+            serviceAreas:
+              profileRes.data.serviceAreas?.join(", ") || "",
+          })
+        }
+      } catch (err) {
+        console.error("Profile fetch error:", err)
       }
-    } catch (err) {
-      console.error("Profile fetch error:", err)
+
+      try {
+        const reviewsRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/caregivers/my-reviews`,
+          { headers }
+        )
+
+        setReviews(reviewsRes.data || [])
+      } catch (err) {
+        console.error("Reviews fetch error:", err)
+      }
+
+      setLoading(false)
     }
 
-    try {
-      const reviewsRes = await axios.get(
-        `${import.meta.env.VITE_API_URL}/caregivers/my-reviews`,
-        { headers }
-      )
-      setReviews(reviewsRes.data || [])
-    } catch (err) {
-      console.error("Reviews fetch error:", err)
-    }
+    fetchProfile()
+  }, [])
 
-    setLoading(false)
-  }
-  fetchProfile()
-}, [])
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -139,43 +146,57 @@ export default function CaregiverProfile() {
   }
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setSubmitting(true)
-  setError("")
-  setSuccess("")
+    e.preventDefault()
 
-  try {
-    const payload = {
-      qualifications: form.qualifications,
-      experienceYears: Number(form.experienceYears),
-      certifications: form.certifications.split(",").map((c) => c.trim()).filter(Boolean),
-      serviceAreas: form.serviceAreas.split(",").map((a) => a.trim()).filter(Boolean),
-      profilePhoto: photoUrl,
-    }
+    setSubmitting(true)
+    setError("")
+    setSuccess("")
 
-    if (profile) {
-      const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/caregivers/profile`,
-        payload,
-        { headers }
+    try {
+      const payload = {
+        qualifications: form.qualifications,
+        experienceYears: Number(form.experienceYears),
+
+        certifications: form.certifications
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean),
+
+        serviceAreas: form.serviceAreas
+          .split(",")
+          .map((a) => a.trim())
+          .filter(Boolean),
+
+        profilePhoto: photoUrl,
+      }
+
+      if (profile) {
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_URL}/caregivers/profile`,
+          payload,
+          { headers }
+        )
+
+        setProfile(res.data)
+        setSuccess("Profile updated successfully")
+      } else {
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_URL}/caregivers/profile`,
+          payload,
+          { headers }
+        )
+
+        setProfile(res.data)
+        setSuccess("Profile created successfully")
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Something went wrong"
       )
-      setProfile(res.data)        // ✅ keep profile state fresh
-      setSuccess("Profile updated successfully")
-    } else {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/caregivers/profile`,
-        payload,
-        { headers }
-      )
-      setProfile(res.data)        // ✅ this is the critical missing line
-      setSuccess("Profile created successfully")
+    } finally {
+      setSubmitting(false)
     }
-  } catch (err) {
-    setError(err.response?.data?.message || "Something went wrong")
-  } finally {
-    setSubmitting(false)
   }
-}
 
   if (loading) {
     return (
@@ -307,31 +328,35 @@ export default function CaregiverProfile() {
             </div>
 
             {documents.map((doc, i) => (
-  <div
-    key={i}
-    className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
-  >
-    <div className="flex items-center gap-2">
-      <span className="text-sm">
-        {doc.endsWith(".pdf") ? "📄" : "🖼️"}
-      </span>
+              <div
+                key={i}
+                className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">
+                    {doc.endsWith(".pdf") ? "📄" : "🖼️"}
+                  </span>
 
-      <span className="text-xs text-gray-600 truncate max-w-xs">
-        Document {i + 1}
-      </span>
-    </div>
+                  <span className="text-xs text-gray-600 truncate max-w-xs">
+                    Document {i + 1}
+                  </span>
+                </div>
 
-    <a
-      href={doc}
-      target="_blank"
-      rel="noreferrer"
-      download
-      className="text-xs text-blue-600 hover:underline"
-    >
-      {doc.includes(".pdf") ? "Download" : "View"}
-    </a>
-  </div>
-))}
+                <a
+                  href={doc.replace(
+                    "/upload/",
+                    "/upload/fl_attachment/"
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  {doc.includes(".pdf")
+                    ? "📄 Download"
+                    : "🖼️ View"}
+                </a>
+              </div>
+            ))}
           </div>
         )}
       </div>
