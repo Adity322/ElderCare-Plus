@@ -2,6 +2,7 @@ import express from "express";
 import Caregiver from "../models/Caregiver.js"
 import upload from "../middleware/uploadMiddleware.js"
 import Review from "../models/Review.js"
+import supabase from "../config/supabase.js"
 import {
   createCaregiverProfile,
   getCaregivers,
@@ -96,18 +97,32 @@ router.put(
   upload.single("photo"),
   async (req, res) => {
     try {
+      const fileName = `photo-${Date.now()}-${req.file.originalname}`
+      const { data, error } = await supabase.storage
+        .from("eldercare-uploads")
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        })
+
+      if (error) throw error
+
+      const { data: urlData } = supabase.storage
+        .from("eldercare-uploads")
+        .getPublicUrl(fileName)
+
       const caregiver = await Caregiver.findOneAndUpdate(
         { userId: req.user._id },
-        { profilePhoto: req.file.path },
+        { profilePhoto: urlData.publicUrl },
         { new: true }
       )
+
       res.json({ profilePhoto: caregiver.profilePhoto })
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
   }
 )
-
 // Admin only
 router.put(
   "/:id/verify",
