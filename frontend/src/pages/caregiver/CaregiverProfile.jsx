@@ -42,12 +42,19 @@ export default function CaregiverProfile() {
           setDocuments(profileRes.data.documents || [])
 
           setForm({
-            qualifications: profileRes.data.qualifications || "",
-            experienceYears: profileRes.data.experienceYears || "",
+            qualifications:
+              profileRes.data.qualifications || "",
+
+            experienceYears:
+              profileRes.data.experienceYears || "",
+
             certifications:
-              profileRes.data.certifications?.join(", ") || "",
+              profileRes.data.certifications?.join(", ") ||
+              "",
+
             serviceAreas:
-              profileRes.data.serviceAreas?.join(", ") || "",
+              profileRes.data.serviceAreas?.join(", ") ||
+              "",
           })
         }
       } catch (err) {
@@ -88,6 +95,7 @@ export default function CaregiverProfile() {
 
     try {
       const formData = new FormData()
+
       formData.append("photo", file)
 
       const res = await axios.put(
@@ -102,6 +110,7 @@ export default function CaregiverProfile() {
       )
 
       setPhotoUrl(res.data.profilePhoto)
+
       setSuccess("Photo uploaded successfully")
     } catch (err) {
       setError("Photo upload failed")
@@ -137,6 +146,7 @@ export default function CaregiverProfile() {
       )
 
       setDocuments(res.data.documents || [])
+
       setSuccess("Documents uploaded successfully")
     } catch (err) {
       setError("Document upload failed")
@@ -155,7 +165,10 @@ export default function CaregiverProfile() {
     try {
       const payload = {
         qualifications: form.qualifications,
-        experienceYears: Number(form.experienceYears),
+
+        experienceYears: Number(
+          form.experienceYears
+        ),
 
         certifications: form.certifications
           .split(",")
@@ -178,6 +191,7 @@ export default function CaregiverProfile() {
         )
 
         setProfile(res.data)
+
         setSuccess("Profile updated successfully")
       } else {
         const res = await axios.post(
@@ -187,11 +201,13 @@ export default function CaregiverProfile() {
         )
 
         setProfile(res.data)
+
         setSuccess("Profile created successfully")
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || "Something went wrong"
+        err.response?.data?.message ||
+          "Something went wrong"
       )
     } finally {
       setSubmitting(false)
@@ -245,8 +261,8 @@ export default function CaregiverProfile() {
 
           {!profile.isVerified && (
             <div className="text-xs text-amber-600 mt-0.5">
-              Your profile will go live once admin approves your
-              documents
+              Your profile will go live once admin approves
+              your documents
             </div>
           )}
         </div>
@@ -273,7 +289,9 @@ export default function CaregiverProfile() {
 
           <div>
             <label className="cursor-pointer bg-white border border-gray-200 hover:border-blue-300 text-gray-600 text-sm px-4 py-2 rounded-lg transition inline-block">
-              {uploading ? "Uploading..." : "Upload Photo"}
+              {uploading
+                ? "Uploading..."
+                : "Upload Photo"}
 
               <input
                 type="file"
@@ -328,33 +346,43 @@ export default function CaregiverProfile() {
             </div>
 
             {documents.map((doc, i) => (
-  <div
-    key={i}
-    className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
-  >
-    <div className="flex items-center gap-2">
-      <span className="text-sm">
-        {doc.toLowerCase().includes(".pdf") || doc.includes("/raw/") ? "📄" : "🖼️"}
-      </span>
-      <span className="text-xs text-gray-600 truncate max-w-xs">
-        Document {i + 1}
-      </span>
-    </div>
-    
-      href={
-        doc.includes("/raw/")
-          ? doc
-          : doc.replace("/image/upload/", "/image/upload/fl_attachment/")
-      }
-      target="_blank"
-      rel="noreferrer"
-      download={`document-${i + 1}`}
-      className="text-xs text-blue-600 hover:underline"
-    >
-      Download
-    </a>
-  </div>
-))}
+              <div
+                key={i}
+                className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">
+                    {doc
+                      .toLowerCase()
+                      .includes(".pdf") ||
+                    doc.includes("/raw/")
+                      ? "📄"
+                      : "🖼️"}
+                  </span>
+
+                  <span className="text-xs text-gray-600 truncate max-w-xs">
+                    Document {i + 1}
+                  </span>
+                </div>
+
+                <a
+                  href={
+                    doc.includes("/raw/")
+                      ? doc
+                      : doc.replace(
+                          "/image/upload/",
+                          "/image/upload/fl_attachment/"
+                        )
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  download={`document-${i + 1}`}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  Download
+                </a>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -471,7 +499,9 @@ export default function CaregiverProfile() {
             My Reviews
 
             <span className="ml-2 bg-amber-50 text-amber-700 text-xs px-2 py-0.5 rounded-full">
-              ⭐ {Number(profile?.rating || 0).toFixed(1)} avg
+              ⭐{" "}
+              {Number(profile?.rating || 0).toFixed(1)}{" "}
+              avg
             </span>
           </h2>
 
@@ -483,11 +513,16 @@ export default function CaregiverProfile() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex text-amber-400 text-sm">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <span key={i}>
-                        {i < review.rating ? "★" : "☆"}
-                      </span>
-                    ))}
+                    {Array.from(
+                      { length: 5 },
+                      (_, i) => (
+                        <span key={i}>
+                          {i < review.rating
+                            ? "★"
+                            : "☆"}
+                        </span>
+                      )
+                    )}
                   </div>
 
                   <span className="text-xs text-gray-400">
@@ -504,7 +539,9 @@ export default function CaregiverProfile() {
                 )}
 
                 <p className="text-xs text-gray-400 mt-1">
-                  — {review.userId?.name || "Family User"}
+                  —{" "}
+                  {review.userId?.name ||
+                    "Family User"}
                 </p>
               </div>
             ))}
