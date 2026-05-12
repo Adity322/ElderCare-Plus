@@ -366,20 +366,12 @@ export default function CaregiverProfile() {
                 </div>
 
                 <a
-                  href={
-                    doc.includes("/raw/")
-                      ? doc
-                      : doc.replace(
-                          "/image/upload/",
-                          "/image/upload/fl_attachment/"
-                        )
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  download={`document-${i + 1}`}
-                  className="text-xs text-blue-600 hover:underline"
+                  href={doc}
+      target="_blank"
+      rel="noreferrer"
+      className="text-xs text-blue-600 hover:underline"
                 >
-                  Download
+                  View
                 </a>
               </div>
             ))}
