@@ -307,30 +307,31 @@ export default function CaregiverProfile() {
             </div>
 
             {documents.map((doc, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">
-                    {doc.endsWith(".pdf") ? "📄" : "🖼️"}
-                  </span>
+  <div
+    key={i}
+    className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2"
+  >
+    <div className="flex items-center gap-2">
+      <span className="text-sm">
+        {doc.endsWith(".pdf") ? "📄" : "🖼️"}
+      </span>
 
-                  <span className="text-xs text-gray-600 truncate max-w-xs">
-                    Document {i + 1}
-                  </span>
-                </div>
+      <span className="text-xs text-gray-600 truncate max-w-xs">
+        Document {i + 1}
+      </span>
+    </div>
 
-                <a
-                  href={doc}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  View
-                </a>
-              </div>
-            ))}
+    <a
+      href={doc}
+      target="_blank"
+      rel="noreferrer"
+      download
+      className="text-xs text-blue-600 hover:underline"
+    >
+      {doc.includes(".pdf") ? "Download" : "View"}
+    </a>
+  </div>
+))}
           </div>
         )}
       </div>
