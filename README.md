@@ -11,7 +11,7 @@ Built as part of the **Unified Mentor Internship Program**.
 ## 🌐 Live Demo
 
 - **Frontend**: https://elder-care-plus-nx65.vercel.app
-- **Backend API**: https://eldercare-plus.onrender.com
+- **Backend API**: https://elder-care-plus.onrender.com
 
 ---
 
