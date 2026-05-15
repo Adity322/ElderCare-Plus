@@ -4,7 +4,6 @@
 
 A full-stack web application that connects elderly patients and their families with verified, trained healthcare professionals for in-home care services.
 
-Built as part of the **Unified Mentor Internship Program**.
 
 ---
   
